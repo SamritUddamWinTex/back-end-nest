@@ -1,6 +1,7 @@
 # Use the MongoDB base image
 FROM mongo:6.0
 
+
 # Install Node.js and npm
 RUN apt-get update && \
     apt-get install -y curl && \
@@ -21,7 +22,7 @@ RUN apt-get update && \
 WORKDIR /app
 
 # Copy application files and install dependencies if applicable
-COPY ./back-end-nest /app
+COPY ./ /app
 RUN npm install
 
 # Command to start your Node.js app (uncomment if needed)

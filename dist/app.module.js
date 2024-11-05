@@ -24,7 +24,7 @@ exports.AppModule = AppModule = __decorate([
             config_1.ConfigModule.forRoot({
                 isGlobal: true,
             }),
-            mongoose_1.MongooseModule.forRoot('mongodb://root:Nest2020@mongo:27017/nest_db?authSource=admin'),
+            mongoose_1.MongooseModule.forRoot(process.env.DB_URLMONG_URI),
             users_module_1.UsersModule,
             task_module_1.TaskModule,
             auth_module_1.AuthModule,

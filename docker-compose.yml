@@ -8,7 +8,7 @@ services:
     container_name: back-end-nest
     working_dir: /app
     volumes:
-      - ./back-end-nest:/app
+      - ./:/app
       - /app/node_modules
     networks:
       - nest-react-mongo-network

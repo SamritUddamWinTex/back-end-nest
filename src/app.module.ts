@@ -7,13 +7,14 @@ import { TaskModule } from './task/task.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
     MongooseModule.forRoot(
-      'mongodb://root:Nest2020@mongo:27017/nest_db?authSource=admin',
+      process.env.DB_URLMONG_URI,
     ),
     UsersModule,
     TaskModule,
