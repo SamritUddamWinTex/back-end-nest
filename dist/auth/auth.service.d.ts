@@ -1,25 +1,30 @@
 import { JwtService } from '@nestjs/jwt';
-import { Model } from 'mongoose';
-import { User } from 'src/users/entities/user.entity';
+import { CreateAuthDto } from './dto/create-auth.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { LoginUserDto } from './dto/login-user.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 export declare class AuthService {
-    private userModel;
-    private jwtService;
-    constructor(userModel: Model<User>, jwtService: JwtService);
-    signup(username: string, password: string): Promise<{
+    private readonly prismaService;
+    private readonly jwtService;
+    constructor(prismaService: PrismaService, jwtService: JwtService);
+    signup(createAuthDto: CreateAuthDto): Promise<{
         access_token: string;
-        user: User;
     }>;
     private getJwtToken;
-    refresh(refresh_token: string): Promise<{
+    refresh(refreshTokenDto: RefreshTokenDto): Promise<{
         newAccessToken: string;
     }>;
-    login(username: string, password: string): Promise<{
+    login(loginUserDto: LoginUserDto): Promise<{
         accessToken: string;
         refreshToken: string;
-        user: import("mongoose").Document<unknown, {}, User> & User & Required<{
-            _id: unknown;
-        }> & {
-            __v: number;
+        user: {
+            name: string;
+            uid: string;
+            email: string;
+            username: string;
+            password: string;
+            created_at: Date;
+            updated_at: Date;
         };
     }>;
     private generateToken;

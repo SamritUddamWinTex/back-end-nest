@@ -1,21 +1,34 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
-import { User } from 'src/users/entities/user.entity';
+import { CreateAuthDto } from './dto/create-auth.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { LoginUserDto } from './dto/login-user.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { User } from '@prisma/client';
 
 @Injectable()
+
 export class AuthService {
+
   constructor(
-    @InjectModel('User') private userModel: Model<User>,
-    private jwtService: JwtService,
+    private readonly prismaService: PrismaService,
+    private readonly jwtService: JwtService,
   ) {}
 
-  async signup(username: string, password: string) {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new this.userModel({ username, password: hashedPassword });
-    await newUser.save();
+  async signup(createAuthDto: CreateAuthDto) {
+    const hashedPassword = await bcrypt.hash(createAuthDto.password, 10);
+    const newUser =await this.prismaService.user.create(
+      {
+         data: { 
+          name: createAuthDto.name,
+          email: createAuthDto.email,
+          username: createAuthDto.username,
+          password: hashedPassword.toString()
+        } 
+      },
+    );
+
     return this.generateToken(newUser);
   }
 
@@ -23,8 +36,8 @@ export class AuthService {
     return this.jwtService.sign({ userId }, { secret, expiresIn });
   }
 
-  async refresh(refresh_token: string) {
-    const payload = this.jwtService.verify(refresh_token, {
+  async refresh(refreshTokenDto: RefreshTokenDto) {
+    const payload = this.jwtService.verify(refreshTokenDto.refresh_token, {
       secret: process.env.REFRESH_SECRET,
     });
     const newAccessToken = this.getJwtToken(
@@ -38,18 +51,19 @@ export class AuthService {
     };
   }
 
-  async login(username: string, password: string) {
-    const user = await this.userModel.findOne({ username });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+  async login(loginUserDto: LoginUserDto) {
+    const user = await this.prismaService.user.findUnique({ where: { username: loginUserDto.username } });
+    if (!user || !(await bcrypt.compare(loginUserDto.password, user.password))) {
       throw new UnauthorizedException('Invalid credentials');
     }
+
     const accessToken = this.getJwtToken(
-      user._id.toString(),
+      user.uid,
       process.env.JWT_SECRET,
       process.env.JWT_EXPIRATION_TIME,
     );
     const refreshToken = this.getJwtToken(
-      user._id.toString(),
+      user.uid,
       process.env.REFRESH_SECRET,
       process.env.REFRESH_EXPIRATION_TIME,
     );
@@ -62,7 +76,7 @@ export class AuthService {
   }
 
   private generateToken(user: User) {
-    const payload = { username: user.username, sub: user.id };
-    return { access_token: this.jwtService.sign(payload), user };
+    const payload = { username: user.username, sub: user.uid };
+    return { access_token: this.jwtService.sign(payload) };
   }
 }

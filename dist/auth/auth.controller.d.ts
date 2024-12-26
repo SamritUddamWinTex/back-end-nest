@@ -1,21 +1,27 @@
 import { AuthService } from './auth.service';
+import { CreateAuthDto } from './dto/create-auth.dto';
+import { LoginUserDto } from './dto/login-user.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 export declare class AuthController {
     private authService;
     constructor(authService: AuthService);
-    refreshToken(refresh_token: string): Promise<{
+    refreshToken(refreshTokenDto: RefreshTokenDto): Promise<{
         newAccessToken: string;
     }>;
-    signup(username: string, password: string): Promise<{
+    signup(createAuthDto: CreateAuthDto): Promise<{
         access_token: string;
-        user: import("../users/entities/user.entity").User;
     }>;
-    login(username: string, password: string): Promise<{
+    login(loginUserDto: LoginUserDto): Promise<{
         accessToken: string;
         refreshToken: string;
-        user: import("mongoose").Document<unknown, {}, import("../users/entities/user.entity").User> & import("../users/entities/user.entity").User & Required<{
-            _id: unknown;
-        }> & {
-            __v: number;
+        user: {
+            name: string;
+            uid: string;
+            email: string;
+            username: string;
+            password: string;
+            created_at: Date;
+            updated_at: Date;
         };
     }>;
 }

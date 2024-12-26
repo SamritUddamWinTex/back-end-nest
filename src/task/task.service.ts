@@ -1,30 +1,54 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Task } from './entities/task.entity';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Task } from '@prisma/client';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class TaskService {
-  constructor(@InjectModel('Task') private taskModel: Model<Task>) {}
+  constructor(
+    private readonly prismaService: PrismaService
+  ) {}
 
-  async create(taskDto: any): Promise<Task> {
-    const newTask = new this.taskModel(taskDto);
-    return await newTask.save();
+  async create(createTaskDto: CreateTaskDto): Promise<Task> {
+    const newTask = this.prismaService.task.create({
+      data: {
+        title: createTaskDto.title,
+        user: {
+          connect: {
+            uid: createTaskDto.user_id
+          }
+        }
+      }
+    });
+    return newTask;
   }
 
   async findAll(): Promise<Task[]> {
-    return await this.taskModel.find().sort({ createdAt: -1 }).exec();
+    return await this.prismaService.task.findMany();
   }
 
-  async findOne(id: string) {
-    return this.taskModel.findById(id).exec();
+  async findOne(uid: string) {
+    return await this.prismaService.task.findFirst({where: { uid}});
   }
 
-  async update(id: string, taskDto: any): Promise<Task> {
-    return this.taskModel.findByIdAndUpdate(id, taskDto, { new: true });
+  async update(uid: string, updateTaskDto: UpdateTaskDto): Promise<Task> {
+    return this.prismaService.task.update({
+      where: {
+        uid
+      },
+      data: {
+        title: updateTaskDto.title,
+        user: {
+          connect: {
+            uid: updateTaskDto.user_id
+          }
+        }
+      }
+    });
   }
 
-  remove(id: string) {
-    return this.taskModel.findByIdAndDelete(id);
+  remove(uid: string) {
+    return this.prismaService.task.delete({where: {uid}});
   }
 }

@@ -3,23 +3,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@nestjs/core");
 const app_module_1 = require("./app.module");
 const all_exceptions_filter_1 = require("./all-exceptions.filter");
+const swagger_1 = require("@nestjs/swagger");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule, { logger: ['error', 'warn', 'log', 'debug', 'verbose'] });
     app.useGlobalFilters(new all_exceptions_filter_1.AllExceptionsFilter());
-    const allowedOrigins = ['http://localhost:3001', 'http://localhost:3000'];
-    app.enableCors({
-        origin: (origin, callback) => {
-            if (!origin || allowedOrigins.includes(origin)) {
-                callback(null, true);
-            }
-            else {
-                callback(new Error('Not allowed by CORS'));
-            }
-        },
-        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-        credentials: true,
-    });
-    await app.listen(process.env.PORT ?? 3000);
+    const config = new swagger_1.DocumentBuilder()
+        .setTitle('Multi Level User')
+        .setDescription('Multi Level User API description')
+        .setVersion('1.0')
+        .addTag('Multi Vender')
+        .addBearerAuth()
+        .build();
+    const documentFactory = () => swagger_1.SwaggerModule.createDocument(app, config);
+    swagger_1.SwaggerModule.setup('api', app, documentFactory);
+    await app.listen(process.env.PORT ?? 3003);
 }
 bootstrap();
 //# sourceMappingURL=main.js.map

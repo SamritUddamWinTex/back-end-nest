@@ -8,32 +8,34 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
-const mongoose_1 = require("@nestjs/mongoose");
-const mongoose_2 = require("mongoose");
 const bcrypt = require("bcryptjs");
+const prisma_service_1 = require("../prisma/prisma.service");
 let AuthService = class AuthService {
-    constructor(userModel, jwtService) {
-        this.userModel = userModel;
+    constructor(prismaService, jwtService) {
+        this.prismaService = prismaService;
         this.jwtService = jwtService;
     }
-    async signup(username, password) {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new this.userModel({ username, password: hashedPassword });
-        await newUser.save();
+    async signup(createAuthDto) {
+        const hashedPassword = await bcrypt.hash(createAuthDto.password, 10);
+        const newUser = await this.prismaService.user.create({
+            data: {
+                name: createAuthDto.name,
+                email: createAuthDto.email,
+                username: createAuthDto.username,
+                password: hashedPassword.toString()
+            }
+        });
         return this.generateToken(newUser);
     }
     getJwtToken(userId, secret, expiresIn) {
         return this.jwtService.sign({ userId }, { secret, expiresIn });
     }
-    async refresh(refresh_token) {
-        const payload = this.jwtService.verify(refresh_token, {
+    async refresh(refreshTokenDto) {
+        const payload = this.jwtService.verify(refreshTokenDto.refresh_token, {
             secret: process.env.REFRESH_SECRET,
         });
         const newAccessToken = this.getJwtToken(payload.userId, process.env.JWT_SECRET, process.env.JWT_EXPIRATION_TIME);
@@ -41,13 +43,13 @@ let AuthService = class AuthService {
             newAccessToken,
         };
     }
-    async login(username, password) {
-        const user = await this.userModel.findOne({ username });
-        if (!user || !(await bcrypt.compare(password, user.password))) {
+    async login(loginUserDto) {
+        const user = await this.prismaService.user.findUnique({ where: { username: loginUserDto.username } });
+        if (!user || !(await bcrypt.compare(loginUserDto.password, user.password))) {
             throw new common_1.UnauthorizedException('Invalid credentials');
         }
-        const accessToken = this.getJwtToken(user._id.toString(), process.env.JWT_SECRET, process.env.JWT_EXPIRATION_TIME);
-        const refreshToken = this.getJwtToken(user._id.toString(), process.env.REFRESH_SECRET, process.env.REFRESH_EXPIRATION_TIME);
+        const accessToken = this.getJwtToken(user.uid, process.env.JWT_SECRET, process.env.JWT_EXPIRATION_TIME);
+        const refreshToken = this.getJwtToken(user.uid, process.env.REFRESH_SECRET, process.env.REFRESH_EXPIRATION_TIME);
         return {
             accessToken,
             refreshToken,
@@ -55,15 +57,14 @@ let AuthService = class AuthService {
         };
     }
     generateToken(user) {
-        const payload = { username: user.username, sub: user.id };
-        return { access_token: this.jwtService.sign(payload), user };
+        const payload = { username: user.username, sub: user.uid };
+        return { access_token: this.jwtService.sign(payload) };
     }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, mongoose_1.InjectModel)('User')),
-    __metadata("design:paramtypes", [mongoose_2.Model,
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         jwt_1.JwtService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

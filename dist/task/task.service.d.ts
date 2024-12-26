@@ -1,23 +1,25 @@
-import { Model } from 'mongoose';
-import { Task } from './entities/task.entity';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Task } from '@prisma/client';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 export declare class TaskService {
-    private taskModel;
-    constructor(taskModel: Model<Task>);
-    create(taskDto: any): Promise<Task>;
+    private readonly prismaService;
+    constructor(prismaService: PrismaService);
+    create(createTaskDto: CreateTaskDto): Promise<Task>;
     findAll(): Promise<Task[]>;
-    findOne(id: string): Promise<import("mongoose").Document<unknown, {}, Task> & Task & Required<{
-        _id: unknown;
-    }> & {
-        __v: number;
+    findOne(uid: string): Promise<{
+        uid: string;
+        title: string;
+        user_id: string;
+        created_at: Date;
+        updated_at: Date;
     }>;
-    update(id: string, taskDto: any): Promise<Task>;
-    remove(id: string): import("mongoose").Query<import("mongoose").Document<unknown, {}, Task> & Task & Required<{
-        _id: unknown;
-    }> & {
-        __v: number;
-    }, import("mongoose").Document<unknown, {}, Task> & Task & Required<{
-        _id: unknown;
-    }> & {
-        __v: number;
-    }, {}, Task, "findOneAndDelete", {}>;
+    update(uid: string, updateTaskDto: UpdateTaskDto): Promise<Task>;
+    remove(uid: string): import(".prisma/client").Prisma.Prisma__TaskClient<{
+        uid: string;
+        title: string;
+        user_id: string;
+        created_at: Date;
+        updated_at: Date;
+    }, never, import("@prisma/client/runtime/library").DefaultArgs>;
 }

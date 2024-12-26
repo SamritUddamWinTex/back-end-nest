@@ -8,39 +8,37 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersService = void 0;
 const common_1 = require("@nestjs/common");
-const mongoose_1 = require("@nestjs/mongoose");
-const mongoose_2 = require("mongoose");
+const prisma_service_1 = require("../prisma/prisma.service");
 let UsersService = class UsersService {
-    constructor(userModel) {
-        this.userModel = userModel;
+    constructor(prismaService) {
+        this.prismaService = prismaService;
     }
     async create(userDto) {
-        const newUser = new this.userModel(userDto);
-        return await newUser.save();
+        const newUser = await this.prismaService.user.create(userDto);
+        return newUser;
     }
     async findAll() {
-        return await this.userModel.find().exec();
+        return await this.prismaService.user.findMany();
     }
-    findOne(id) {
-        return this.userModel.findById(id).exec();
+    findOne(uid) {
+        return this.prismaService.user.findFirst({ where: { uid: uid } });
     }
-    async update(id, userDto) {
-        return this.userModel.findByIdAndUpdate(id, userDto, { new: true });
+    async update(uid, userDto) {
+        return this.prismaService.user.update({
+            where: { uid: uid },
+            data: userDto,
+        });
     }
-    remove(id) {
-        return this.userModel.findByIdAndDelete(id);
+    remove(uid) {
+        return this.prismaService.user.delete({ where: { uid: uid } });
     }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, mongoose_1.InjectModel)('User')),
-    __metadata("design:paramtypes", [mongoose_2.Model])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map

@@ -1,29 +1,32 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { User } from './entities/user.entity';
+import { User } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel('User') private userModel: Model<User>) {}
+  constructor(private readonly prismaService: PrismaService,
+  ) {}
 
   async create(userDto: any): Promise<User> {
-    const newUser = new this.userModel(userDto);
-    return await newUser.save();
+    const newUser = await this.prismaService.user.create(userDto);
+    return newUser;
   }
 
   async findAll(): Promise<User[]> {
-    return await this.userModel.find().exec();
+    return await this.prismaService.user.findMany();
   }
 
-  findOne(id: string) {
-    return this.userModel.findById(id).exec();
+  findOne(uid: string) {
+    return this.prismaService.user.findFirst({ where: { uid: uid } });
   }
-  async update(id: string, userDto: any): Promise<User> {
-    return this.userModel.findByIdAndUpdate(id, userDto, { new: true });
+  async update(uid: string, userDto: any): Promise<User> {
+    return this.prismaService.user.update({
+      where: { uid: uid },
+      data: userDto,
+    });
   }
 
-  remove(id: string) {
-    return this.userModel.findByIdAndDelete(id);
+  remove(uid: string) {
+    return this.prismaService.user.delete({ where: { uid: uid } });
   }
 }

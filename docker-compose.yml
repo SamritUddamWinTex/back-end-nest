@@ -9,55 +9,39 @@ services:
     working_dir: /app
     volumes:
       - ./:/app
-      - /app/node_modules
     networks:
-      - nest-react-mongo-network
+      - nest-react-mysql-network
     ports:
-      - "3002:3000"
+      - "3003:3003"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: Nest2020
-      MONGO_INITDB_DATABASE: nest_db
-      ME_CONFIG_MONGODB_URL: mongodb://root:Nest2020@mongo:27017/nest_db?authSource=admin
-      ME_CONFIG_BASICAUTH: false
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 0835897600Za
+      POSTGRES_DB: back_end_db
     depends_on:
-      - mongo
+      - postgres
     command: >
-      sh -c "npm install && npm run start:dev"
+      sh -c "npm install && npm run start:dev --watch"
 
-  mongo:
-    image: mongo
-    container_name: mongo_db
+  postgres:
+    image: postgres
+    container_name: back-end-postgres-db
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: Nest2020
-      MONGO_INITDB_DATABASE: nest_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 0835897600Za
+      POSTGRES_DB: back_end_db
     ports:
-      - "27017:27017"
+      - "5433:5432"
     volumes:
-      - mongo-data:/data/db
+      - mysql-data:/var/lib/postgresql/data
     networks:
-      - nest-react-mongo-network
-
-  mongo-express:
-    image: mongo-express
-    container_name: mongo_express
-    environment:
-      ME_CONFIG_MONGODB_URL: mongodb://root:Nest2020@mongo_db:27017/nest_db?authSource=admin
-      ME_CONFIG_BASICAUTH: "false"
-    ports:
-      - "7081:8081"
-    networks:
-      - nest-react-mongo-network
-    depends_on:
-      - mongo
+      - nest-react-mysql-network
 
 #Docker Networks
 networks:
-  nest-react-mongo-network:
+  nest-react-mysql-network:
     driver: bridge
 
 #Docker Volumes
 volumes:
-  mongo-data:
+  mysql-data:
     driver: local

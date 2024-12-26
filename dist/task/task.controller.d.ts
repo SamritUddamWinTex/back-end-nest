@@ -1,22 +1,42 @@
 import { TaskService } from './task.service';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 export declare class TaskController {
     private readonly taskService;
     constructor(taskService: TaskService);
-    create(createTaskDto: any): Promise<import("./entities/task.entity").Task>;
-    findAll(): Promise<import("./entities/task.entity").Task[]>;
-    findOne(id: string): Promise<import("mongoose").Document<unknown, {}, import("./entities/task.entity").Task> & import("./entities/task.entity").Task & Required<{
-        _id: unknown;
-    }> & {
-        __v: number;
+    create(createTaskDto: CreateTaskDto): Promise<{
+        uid: string;
+        title: string;
+        user_id: string;
+        created_at: Date;
+        updated_at: Date;
     }>;
-    update(id: string, updateTaskDto: any): Promise<import("./entities/task.entity").Task>;
-    remove(id: string): import("mongoose").Query<import("mongoose").Document<unknown, {}, import("./entities/task.entity").Task> & import("./entities/task.entity").Task & Required<{
-        _id: unknown;
-    }> & {
-        __v: number;
-    }, import("mongoose").Document<unknown, {}, import("./entities/task.entity").Task> & import("./entities/task.entity").Task & Required<{
-        _id: unknown;
-    }> & {
-        __v: number;
-    }, {}, import("./entities/task.entity").Task, "findOneAndDelete", {}>;
+    findAll(): Promise<{
+        uid: string;
+        title: string;
+        user_id: string;
+        created_at: Date;
+        updated_at: Date;
+    }[]>;
+    findOne(id: string): Promise<{
+        uid: string;
+        title: string;
+        user_id: string;
+        created_at: Date;
+        updated_at: Date;
+    }>;
+    update(id: string, updateTaskDto: UpdateTaskDto): Promise<{
+        uid: string;
+        title: string;
+        user_id: string;
+        created_at: Date;
+        updated_at: Date;
+    }>;
+    remove(id: string): import(".prisma/client").Prisma.Prisma__TaskClient<{
+        uid: string;
+        title: string;
+        user_id: string;
+        created_at: Date;
+        updated_at: Date;
+    }, never, import("@prisma/client/runtime/library").DefaultArgs>;
 }
